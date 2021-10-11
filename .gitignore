@@ -1,4 +1,7 @@
 .gradle
+gradle/wrapper
+gradlew
+gradlew.bat
 
 build
 bin
@@ -6,3 +9,5 @@ bin
 .settings
 .classpath
 .project
+
+

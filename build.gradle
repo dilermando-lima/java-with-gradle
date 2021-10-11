@@ -1,6 +1,8 @@
 plugins {
     id "java"
     id "application"
+    id "org.sonarqube" version "3.3"
+    id "jacoco"
 }
 
 repositories{
@@ -8,20 +10,17 @@ repositories{
     mavenCentral()
 }
 
-sourceSets {
+sourceSets { // settings for change default folder on classpaths ( src/main/java, srs/main/resources and src/test/java)
   main.java.srcDirs = ["src"]
   main.resources.srcDirs = ["resource"]
   test.java.srcDirs = ["test"]
 }
 
-mainClassName = "com.test.Run"
-group = "com.test"
-version = "1.0.0"
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+application{ // settings for 'gradle run'
+    mainClass = project.mainClassName
+}
 
-
-dependencies{
+dependencies{ // settings for all external depencies
 
     def versionJunit = "5.8.1"
     def versionLog4j = "2.14.1"
@@ -34,7 +33,7 @@ dependencies{
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${versionJunit}"
 }
 
-jar {
+jar { // settings for create fat-jar with all dependencies in it
     manifest {
         attributes "Main-Class": "${mainClassName}"
     }
@@ -42,21 +41,19 @@ jar {
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
-/* 
-    // ======================  Override task jar into a seperated task
-    task buildJar(type: Jar) {
-        manifest {
-            attributes "Main-Class": "${mainClassName}"
-        }
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE 
-        archiveBaseName = "${rootProject.name}"
-        from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-        with jar
-    }
-*/
 
 
-test {
+test { // settings for JUNIT 5
     testLogging.events = ["passed", "skipped", "failed"]
     useJUnitPlatform()
 }
+
+jacocoTestReport { // settings for report jacoco to be used on sonar
+    dependsOn test
+    reports {
+        xml.enabled true
+    }
+}
+
+tasks['sonarqube'].dependsOn jacocoTestReport
+
